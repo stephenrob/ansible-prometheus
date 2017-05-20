@@ -30,13 +30,20 @@
         prometheus_alertmanager_tarball_url: "https://github.com/prometheus/alertmanager/releases/download/{{ prometheus_alertmanager_version }}/{{ prometheus_alertmanager_signature }}.tar.gz"
       when: prometheus_alertmanager_version | version_compare('0.3', '<')
 
+    - name: set prometheus alertmanager tarball name
+      set_fact:
+        prometheus_alertmanager_tarball_name: "{{ prometheus_alertmanager_signature }}.tar.gz"
 
+    - name: download alertmanager tarball
+      get_url:
+        url: "{{ prometheus_alertmanager_tarball_url }}"
+        dest: "/tmp/{{ prometheus_alertmanager_tarball_name }}"
 
-    - name: download and uncompress alertmanager tarball
+    - name: uncompress alertmanager tarball
       unarchive:
-        src: "{{ prometheus_alertmanager_tarball_url }}"
+        src: "/tmp/{{ prometheus_alertmanager_tarball_name }}"
         dest: "{{ prometheus_alertmanager_untar_path }}"
-        copy: no
+        remote_src: true
         owner: "{{ prometheus_user }}"
         group: "{{ prometheus_group }}"
         mode: "go-w"
