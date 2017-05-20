@@ -23,6 +23,10 @@
         prometheus_tarball_url: "https://github.com/prometheus/prometheus/releases/download/{{ prometheus_version }}/prometheus-{{ prometheus_version }}.{{ prometheus_platform_suffix }}.tar.gz"
       when: prometheus_version | version_compare('1.0', '<')
 
+    - name: set prometheus tarball name
+      set_fact:
+        prometheus_tarball_name: "prometheus-{{ prometheus_version }}.{{ prometheus_platform_suffix }}.tar.gz"
+
     - name: set daemon dir for versions >= 0.16
       set_fact:
         prometheus_daemon_dir: "{{ prometheus_subdir }}"
@@ -33,11 +37,15 @@
         prometheus_daemon_dir: "{{ prometheus_install_path }}"
       when: prometheus_version | version_compare('0.16', '<')
 
-    - name: download and untar prometheus tarball
+    - name: download prometheus tarball
+      get_url:
+        url: "{{ prometheus_tarball_url }}"
+        dest: "/tmp/{{ prometheus_tarball_name }}"
+
+    - name: untar prometheus tarball
       unarchive:
-        src: "{{ prometheus_tarball_url }}"
+        src: "/tmp/{{ prometheus_tarball_name }}"
         dest: "{{ prometheus_install_path }}"
-        remote_src: true
 
   when: prometheus_version != "git"
 

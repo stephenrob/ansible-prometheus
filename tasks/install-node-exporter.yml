@@ -23,6 +23,10 @@
         prometheus_node_exporter_tarball_url: "https://github.com/prometheus/node_exporter/releases/download/{{ prometheus_node_exporter_version }}/node_exporter-{{ prometheus_node_exporter_version }}.{{ prometheus_platform_suffix }}.tar.gz"
       when: prometheus_node_exporter_version | version_compare('0.13.0', '<')
 
+    - name: set prometheus node exporter tarball name
+      set_fact:
+        prometheus_node_exporter_tarball_name: "node_exporter-{{ prometheus_node_exporter_version }}.{{ prometheus_platform_suffix }}.tar.gz"
+
     - name: set daemon dir for versions >= 0.12
       set_fact:
         prometheus_node_exporter_daemon_dir: "{{ prometheus_node_exporter_subdir }}"
@@ -33,11 +37,15 @@
         prometheus_node_exporter_daemon_dir: "{{ prometheus_install_path }}"
       when: prometheus_node_exporter_version | version_compare('0.12', '<')
 
-    - name: download and untar node_exporter tarball
+    - name: download prometheus node exporter tarball
+      get_url:
+        url: "{{ prometheus_node_exporter_tarball_url }}"
+        dest: "/tmp/{{ prometheus_node_exporter_tarball_name }}"
+
+    - name: untar prometheus node exporter tarball
       unarchive:
-        src: "{{ prometheus_node_exporter_tarball_url }}"
+        src: "/tmp/{{ prometheus_node_exporter_tarball_name }}"
         dest: "{{ prometheus_install_path }}"
-        remote_src: true
 
   when: prometheus_node_exporter_version != "git"
 
